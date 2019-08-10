@@ -16,8 +16,8 @@ func Frequency(s string) FreqMap {
 func ConcurrentFrequency(s []string) FreqMap {
 	channel := make(chan FreqMap, len(s))
 
-	for _, r := range s {
-		r := r
+	for _, str := range s {
+		r := str
 		go func() {
 			channel <- Frequency(r)
 		}()
