@@ -1,8 +1,6 @@
 package tree
 
-import "fmt"
 import "sort"
-
 import "errors"
 
 type Record struct {
@@ -33,6 +31,9 @@ func errorChecker(records []Record) error {
 		} else if rec.ID != 0 && rec.ID == rec.Parent {
 			err = errors.New("direct find")
 			break
+		} else if rec.ID < rec.Parent {
+			err = errors.New("cycle indirect")
+			break
 		}
 		if lowerID != rec.ID {
 			lowerID = rec.ID
@@ -46,34 +47,24 @@ func errorChecker(records []Record) error {
 
 func Build(records []Record) (*Node, error) {
 
-	//	rootID := 0
-
 	if len(records) == 0 {
-		return nil, nil //errors.New("record est vide")
+		return nil, nil
 	}
 
-	fmt.Println("======start============")
-	fmt.Printf("records before sort=> ")
-	fmt.Println(records)
 	sort.Slice(records, func(i, j int) bool {
 		return records[i].ID < records[j].ID
 	})
-	fmt.Printf("records after sort=> ")
-	fmt.Println(records)
 	err := errorChecker(records)
 	if err != nil {
 		return nil, err
 	}
 
-	fmt.Printf("len %d\n", len(records))
 	node := make([]Node, len(records))
 	for i, v := range records {
-		fmt.Printf("index %d value [%d]\n", i, v)
 		node[i].ID = v.ID
 		if v.ID != v.Parent {
 			node[v.Parent].Children = append(node[v.Parent].Children, &node[v.ID])
 		}
 	}
-	fmt.Printf("node value => [%v]\n\n", node)
 	return &node[0], nil
 }
