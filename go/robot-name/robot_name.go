@@ -1,6 +1,5 @@
 package robotname
 
-import "fmt"
 import "math/rand"
 import "strconv"
 
@@ -20,14 +19,12 @@ func randomName() string {
 }
 
 func (r *Robot) Name() (string, error) {
-	r.name = randomName()
 	if r.name == "" {
-		for nameMap[r.name] == 1 {
+		for nameMap[r.name] == 1 || r.name == "" {
 			r.name = randomName()
 		}
 	}
 	nameMap[r.name]++
-	fmt.Println(r.name)
 	return r.name, nil
 }
 
