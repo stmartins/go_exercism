@@ -5,7 +5,11 @@ import "fmt"
 import "strings"
 
 func emptyString(str string) bool {
-	if str == "" || str == "\n" {
+
+	fmt.Println("|" + str + "|")
+	fmt.Printf("%d\n", len(str))
+	if str == "" || str == "\n" || byte(str[0]) == 0 {
+		fmt.Println("string is empty")
 		return true
 	}
 	return false
@@ -23,13 +27,16 @@ func Tally(r io.Reader, w io.Writer) error {
 	}
 	//	fmt.Printf("=======>")
 	//	fmt.Printf("%s\n", buf)
-
 	//	fmt.Println("-----------")
-
-	teamArray := make(map[string]int, 5)
+	teamArray := make(map[string]int, 4)
+	fmt.Println(string(buf))
 	str := strings.Split(string(buf), "\n")
+	fmt.Printf("len = %d\n", len(str))
+	fmt.Println(str)
+	var IOstr []string
 	for _, s := range str {
-		IOstr := strings.Split(s, ";")
+		fmt.Printf("s =>|%s|<=\n", s)
+		IOstr = strings.Split(s, ";")
 		if emptyString(IOstr[0]) == false {
 			fmt.Println("-----------")
 			fmt.Printf("[%s]\n", IOstr[0])
@@ -49,10 +56,16 @@ func Tally(r io.Reader, w io.Writer) error {
 			}
 		}
 	}
+	display_results(teamArray, w)
+
 	//	fmt.Println(teamArray["Allegoric Alaskians"])
 	//	for k, v := range teamArray {
 	//		fmt.Println(k)
 	//		fmt.Println(v)
 	//	}
 	return nil
+}
+
+func display_results(teamArray map[string]int, w io.Writer) {
+
 }
