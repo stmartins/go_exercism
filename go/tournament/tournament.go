@@ -25,6 +25,7 @@ func (p PairList) Less(i, j int) bool { return p[i].point < p[j].point }
 func (p PairList) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
 
 func emptyString(str string) bool {
+	fmt.Println("[" + str + "]")
 	if str == "" || str == "\n" || byte(str[0]) == 0 || byte(str[0]) == '#' {
 		return true
 	}
@@ -33,17 +34,21 @@ func emptyString(str string) bool {
 
 func Tally(r io.Reader, w io.Writer) error {
 
-	buf := make([]byte, 300)
+	buf := make([]byte, 400)
 	for {
 		_, err := r.Read(buf)
 		if err == io.EOF {
 			break
 		}
 	}
+	fmt.Println("--------------Entre---------------")
 	teamArray := make(map[string]Result, 4)
 	str := strings.Split(string(buf), "\n")
+	fmt.Println(str)
 	var IOstr []string
 	for _, s := range str {
+
+		fmt.Println("[" + s + "]")
 		IOstr = strings.Split(s, ";")
 		if emptyString(IOstr[0]) == false {
 			switch IOstr[2] {
