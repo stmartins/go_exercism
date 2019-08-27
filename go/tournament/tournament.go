@@ -3,8 +3,9 @@ package tournament
 import "io"
 import "fmt"
 import "strings"
+import "sort"
 
-type result struct {
+type Result struct {
 	MP int
 	W  int
 	D  int
@@ -12,12 +13,19 @@ type result struct {
 	P  int
 }
 
-func emptyString(str string) bool {
+type Pair struct {
+	name  string
+	point int
+}
 
-	fmt.Println("|" + str + "|")
-	fmt.Printf("%d\n", len(str))
+type PairList []Pair
+
+func (p PairList) Len() int           { return len(p) }
+func (p PairList) Less(i, j int) bool { return p[i].point < p[j].point }
+func (p PairList) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+
+func emptyString(str string) bool {
 	if str == "" || str == "\n" || byte(str[0]) == 0 || byte(str[0]) == '#' {
-		fmt.Println("string is empty")
 		return true
 	}
 	return false
@@ -28,27 +36,16 @@ func Tally(r io.Reader, w io.Writer) error {
 	buf := make([]byte, 300)
 	for {
 		_, err := r.Read(buf)
-		//		fmt.Printf("n => %d buf => %s\n", n, buf[:n])
 		if err == io.EOF {
 			break
 		}
 	}
-	//	fmt.Printf("=======>")
-	//	fmt.Printf("%s\n", buf)
-	//	fmt.Println("-----------")
-	teamArray := make(map[string]result, 4)
-	fmt.Println(string(buf))
+	teamArray := make(map[string]Result, 4)
 	str := strings.Split(string(buf), "\n")
-	fmt.Printf("len = %d\n", len(str))
-	fmt.Println(str)
 	var IOstr []string
 	for _, s := range str {
-		fmt.Printf("s =>|%s|<=\n", s)
 		IOstr = strings.Split(s, ";")
 		if emptyString(IOstr[0]) == false {
-			fmt.Println("-----------")
-			fmt.Printf("[%s]\n", IOstr[0])
-			fmt.Println("-----------")
 			switch IOstr[2] {
 			case "win":
 				var winner, loser = teamArray[IOstr[0]], teamArray[IOstr[1]]
@@ -95,29 +92,39 @@ func Tally(r io.Reader, w io.Writer) error {
 		}
 	}
 	display_results(teamArray, w)
-
-	//	fmt.Println(teamArray["Allegoric Alaskians"])
-	//	for k, v := range teamArray {
-	//		fmt.Println(k)
-	//		fmt.Println(v)
-	//	}
+	fmt.Println("================================================")
 	return nil
 }
 
-func display_results(teamArray map[string]result, w io.Writer) {
-	fmt.Println("in display_results ===============")
-	fmt.Println(len(teamArray))
-
-	orderTeam := make([]result, 4)
-
-	for index := 0; index < 4; index++ {
-		for i, v := range teamArray {
-			if orderTeam[0].MP == 0 {
-
-				fmt.Println("order is nill")
-			}
-			fmt.Println(i)
-			fmt.Println(v)
-		}
+func rankByPoints(teamsMap map[string]Result) PairList {
+	pl := make(PairList, len(teamsMap))
+	i := 0
+	for k, v := range teamsMap {
+		pl[i] = Pair{k, v.P}
+		i++
 	}
+	sort.Sort(sort.Reverse(pl))
+	return pl
+}
+
+func display_results(teamArray map[string]Result, w io.Writer) {
+
+	teamRanked := rankByPoints(teamArray)
+
+	w.Write([]byte("Team                           | MP |  W |  D |  L |  P\n"))
+	//w.Write([]byte(fmt.Sprintf("\n")))
+	for _, v := range teamRanked {
+		fmt.Println("[" + v.name + "]")
+		display_results_array(teamArray[v.name], v.name, w)
+	}
+}
+
+func display_results_array(teamFinalResults Result, name string, w io.Writer) {
+	w.Write([]byte(fmt.Sprintf("%s", name)))
+	for i := 0; i+len(name) < 31; i++ {
+		w.Write([]byte(" "))
+	}
+	w.Write([]byte(fmt.Sprintf("|  %d |  %d |  %d |  %d |  %d\n",
+		teamFinalResults.MP, teamFinalResults.W, teamFinalResults.D,
+		teamFinalResults.L, teamFinalResults.P)))
 }
