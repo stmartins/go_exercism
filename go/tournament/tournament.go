@@ -4,6 +4,7 @@ import "io"
 import "fmt"
 import "strings"
 import "sort"
+import "errors"
 
 type Result struct {
 	MP int
@@ -20,12 +21,16 @@ type Pair struct {
 
 type PairList []Pair
 
-func (p PairList) Len() int           { return len(p) }
-func (p PairList) Less(i, j int) bool { return p[i].point < p[j].point }
-func (p PairList) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+func (p PairList) Len() int { return len(p) }
+func (p PairList) Less(i, j int) bool {
+	if p[i].point == p[j].point && p[i].name > p[j].name {
+		return true
+	}
+	return p[i].point < p[j].point
+}
+func (p PairList) Swap(i, j int) { p[i], p[j] = p[j], p[i] }
 
 func emptyString(str string) bool {
-	fmt.Println("[" + str + "]")
 	if str == "" || str == "\n" || byte(str[0]) == 0 || byte(str[0]) == '#' {
 		return true
 	}
@@ -41,16 +46,16 @@ func Tally(r io.Reader, w io.Writer) error {
 			break
 		}
 	}
-	fmt.Println("--------------Entre---------------")
 	teamArray := make(map[string]Result, 4)
 	str := strings.Split(string(buf), "\n")
-	fmt.Println(str)
 	var IOstr []string
 	for _, s := range str {
 
-		fmt.Println("[" + s + "]")
 		IOstr = strings.Split(s, ";")
 		if emptyString(IOstr[0]) == false {
+			if len(IOstr) != 3 {
+				return errors.New("error input string")
+			}
 			switch IOstr[2] {
 			case "win":
 				var winner, loser = teamArray[IOstr[0]], teamArray[IOstr[1]]
@@ -92,12 +97,11 @@ func Tally(r io.Reader, w io.Writer) error {
 				teamArray[IOstr[0]] = draw1
 				teamArray[IOstr[1]] = draw2
 			default:
-				fmt.Println("error")
+				return errors.New("error")
 			}
 		}
 	}
 	display_results(teamArray, w)
-	fmt.Println("================================================")
 	return nil
 }
 
@@ -117,9 +121,7 @@ func display_results(teamArray map[string]Result, w io.Writer) {
 	teamRanked := rankByPoints(teamArray)
 
 	w.Write([]byte("Team                           | MP |  W |  D |  L |  P\n"))
-	//w.Write([]byte(fmt.Sprintf("\n")))
 	for _, v := range teamRanked {
-		fmt.Println("[" + v.name + "]")
 		display_results_array(teamArray[v.name], v.name, w)
 	}
 }
